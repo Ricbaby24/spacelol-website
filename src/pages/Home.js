@@ -3,6 +3,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import CountdownTimer from '../components/CountdownTimer';
+import Leaderboard from '../components/Leaderboard';
 
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
 const BUY_LIMIT_SOL = 1;
@@ -10,49 +11,59 @@ const BUY_LIMIT_SOL = 1;
 const Home = () => {
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
+
   const [amount, setAmount] = useState(0.05);
+  const [status, setStatus] = useState('');
 
- const handleBuy = async () => {
-  try {
-    if (!publicKey) {
-      alert('Connect your wallet first!');
-      return;
+  const handleBuy = async () => {
+    setStatus('');
+    try {
+      if (!publicKey) {
+        setStatus('❌ Please connect your wallet first!');
+        return;
+      }
+
+      if (amount < 0.01 || amount > BUY_LIMIT_SOL) {
+        setStatus('❌ Amount must be between 0.01 and 1 SOL');
+        return;
+      }
+
+      const lamports = amount * 1e9;
+
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey,
+          toPubkey: PRESALE_ADDRESS,
+          lamports,
+        })
+      );
+
+      const signature = await sendTransaction(transaction, connection);
+      await connection.confirmTransaction(signature, 'confirmed');
+
+      const res = await fetch('https://spacelol-backend.onrender.com/api/purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          wallet: publicKey.toBase58(),
+          amount,
+          txSig: signature,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus(`✅ Purchase successful! ${data.tokensSent || 'Tokens'} sent.\nTx: ${signature}`);
+      } else {
+        setStatus(`❌ Backend error: ${data.error || 'Try again later.'}`);
+      }
+
+    } catch (err) {
+      console.error(err);
+      setStatus('❌ Transaction failed. Please try again.');
     }
-
-    if (amount < 0.05 || amount > BUY_LIMIT_SOL) {
-      alert('Please enter an amount between 0.01 and 1 SOL');
-      return;
-    }
-
-    const lamports = amount * 1e9; // Use dynamic amount
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: publicKey,
-        toPubkey: PRESALE_ADDRESS,
-        lamports,
-      })
-    );
-
-    const signature = await sendTransaction(transaction, connection);
-    await connection.confirmTransaction(signature, 'confirmed');
-
-    // ✅ Notify backend of the purchase
-    await fetch('https://spacelol-backend.onrender.com/purchase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        wallet: publicKey.toBase58(),
-        amount,
-        signature,
-      }),
-    });
-
-    alert(`✅ Purchase successful!\nTransaction Signature:\n${signature}`);
-  } catch (err) {
-    console.error(err);
-    alert('❌ Transaction failed.');
-  }
-};
+  };
 
   return (
     <div
@@ -91,11 +102,9 @@ const Home = () => {
           ⏳ Presale ends in: <CountdownTimer />
         </p>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <WalletMultiButton />
-        </div>
+        <WalletMultiButton />
 
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ margin: '1.5rem 0' }}>
           <input
             type="number"
             min="0.01"
@@ -107,7 +116,7 @@ const Home = () => {
               padding: '0.5rem',
               fontSize: '1rem',
               width: '150px',
-              marginRight: '1rem',
+              marginRight: '0.5rem',
               borderRadius: '6px',
               border: '1px solid #ccc',
             }}
@@ -134,9 +143,26 @@ const Home = () => {
           🚀 Buy $SPLOL Now
         </button>
 
+        {status && (
+          <p
+            style={{
+              marginTop: '1.2rem',
+              color: status.startsWith('✅') ? '#00ffcc' : '#ff5050',
+              fontSize: '0.95rem',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {status}
+          </p>
+        )}
+
         <p style={{ marginTop: '1.5rem', fontSize: '0.95rem', color: '#ccc' }}>
           Make history by becoming a founding degen. Presale buyers will receive limited NFTs.
         </p>
+
+        <div style={{ marginTop: '2.5rem' }}>
+          <Leaderboard />
+        </div>
       </div>
     </div>
   );

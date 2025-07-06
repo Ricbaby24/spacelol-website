@@ -1,0 +1,11 @@
+{
+  "name": "Spacelol",
+  "symbol": "SPLOL",
+  "description": "Spacelol ($SPLOL) is a meme-powered token taking laughter and degens to the moon.",
+  "image": "https://spacelol-website-8cep.vercel.app/spacelol-logo.png",
+  "extensions": {
+    "website": "https://spacelol-website-8cep.vercel.app",
+    "twitter": "https://x.com/SpacelolCoin",
+    "telegram": "https://t.me/+gyOLH39iCh1iMGI0"
+  }
+}

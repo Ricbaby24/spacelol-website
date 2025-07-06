@@ -4,8 +4,7 @@ import Home from './pages/Home';
 import Whitepaper from './pages/Whitepaper';
 import Roadmap from './pages/Roadmap';
 import ClaimNFT from './pages/ClaimNFT';
-import CountdownTimer from './components/CountdownTimer';
-
+import Leaderboard from './pages/Leaderboard';
 
 function App() {
   return (
@@ -16,6 +15,7 @@ function App() {
         <Route path="/whitepaper" element={<Whitepaper />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/claim" element={<ClaimNFT />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </Router>
   );
