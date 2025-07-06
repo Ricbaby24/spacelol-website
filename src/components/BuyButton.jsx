@@ -1,4 +1,3 @@
-// components/BuyButton.jsx
 import { useEffect, useState } from 'react';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
@@ -6,7 +5,7 @@ const PRESALE_WALLET = 'EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry'; // Your S
 
 export default function BuyButton() {
   const [walletAddress, setWalletAddress] = useState(null);
-  const [amountSOL, setAmountSOL] = useState(0.01);
+  const [amountSOL, setAmountSOL] = useState(0.05);
   const [loading, setLoading] = useState(false);
   const [txSig, setTxSig] = useState(null);
   const [result, setResult] = useState(null);
@@ -39,10 +38,10 @@ export default function BuyButton() {
       const lamports = Math.floor(amountSOL * 1e9);
 
       const connection = new window.solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
-      const recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+      const { blockhash } = await connection.getLatestBlockhash('confirmed');
 
       const transaction = new window.solanaWeb3.Transaction({
-        recentBlockhash,
+        recentBlockhash: blockhash,
         feePayer: provider.publicKey,
       }).add(
         window.solanaWeb3.SystemProgram.transfer({
@@ -52,28 +51,28 @@ export default function BuyButton() {
         })
       );
 
-      const signed = await provider.signTransaction(transaction);
-      const sig = await connection.sendRawTransaction(signed.serialize());
-      await connection.confirmTransaction(sig);
+      const signedTx = await provider.signTransaction(transaction);
+      const txid = await connection.sendRawTransaction(signedTx.serialize());
+      await connection.confirmTransaction(txid, 'confirmed');
 
-      setTxSig(sig);
+      setTxSig(txid);
 
-      // Call backend to verify and send tokens
-      const res = await fetch(`${BACKEND_URL}/api/purchase`, {
+      // ✅ Notify backend to verify & send tokens
+      const response = await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           wallet: provider.publicKey.toString(),
           amount: amountSOL,
-          txSig: sig,
+          txSig: txid,
         }),
       });
 
-      const json = await res.json();
+      const json = await response.json();
       setResult(json);
     } catch (err) {
-      console.error('Transaction failed:', err);
-      alert('Transaction failed. Check console for details.');
+      console.error('❌ Transaction error:', err);
+      alert('❌ Transaction failed. Check console for details.');
     } finally {
       setLoading(false);
     }
@@ -89,10 +88,11 @@ export default function BuyButton() {
         <>
           <input
             type="number"
-            step="0.001"
-            min="0.001"
+            step="0.01"
+            min="0.01"
+            max="1"
             value={amountSOL}
-            onChange={(e) => setAmountSOL(e.target.value)}
+            onChange={(e) => setAmountSOL(parseFloat(e.target.value))}
             className="w-full p-2 rounded bg-gray-800 text-white"
             placeholder="Amount in SOL"
           />

@@ -6,6 +6,7 @@ import CountdownTimer from '../components/CountdownTimer';
 import Leaderboard from '../components/Leaderboard';
 
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
+const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 const BUY_LIMIT_SOL = 1;
 
 const Home = () => {
@@ -41,7 +42,7 @@ const Home = () => {
       const signature = await sendTransaction(transaction, connection);
       await connection.confirmTransaction(signature, 'confirmed');
 
-      const res = await fetch('https://spacelol-backend.onrender.com/api/purchase', {
+      const res = await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,11 +55,10 @@ const Home = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setStatus(`✅ Purchase successful! ${data.tokensSent || 'Tokens'} sent.\nTx: ${signature}`);
+        setStatus(`✅ Purchase successful!\n${data.tokensSent || 'Tokens'} sent.\nTx: ${signature}`);
       } else {
         setStatus(`❌ Backend error: ${data.error || 'Try again later.'}`);
       }
-
     } catch (err) {
       console.error(err);
       setStatus('❌ Transaction failed. Please try again.');
