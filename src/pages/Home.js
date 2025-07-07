@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
+import { PublicKey, Connection, Transaction, SystemProgram } from '@solana/web3.js';
 import CountdownTimer from '../components/CountdownTimer';
 import Leaderboard from '../components/Leaderboard';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
+const ALCHEMY_RPC = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
 const BUY_LIMIT_SOL = 1;
 
 const Home = () => {
-  const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
-
   const [amount, setAmount] = useState(0.05);
   const [status, setStatus] = useState('');
 
@@ -29,7 +28,8 @@ const Home = () => {
         return;
       }
 
-      const lamports = Math.floor(amount * 1e9);
+      const lamports = amount * 1e9;
+      const connection = new Connection(ALCHEMY_RPC);
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -60,7 +60,7 @@ const Home = () => {
         setStatus(`❌ Backend error: ${data.error || 'Try again later.'}`);
       }
     } catch (err) {
-      console.error('Transaction failed:', err);
+      console.error(err);
       setStatus('❌ Transaction failed. Please try again.');
     }
   };
