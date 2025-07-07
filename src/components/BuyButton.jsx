@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
-const PRESALE_WALLET = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
-const RPC_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
+const PRESALE_WALLET = 'EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry';
+const ALCHEMY_RPC = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 
 export default function BuyButton() {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -14,22 +13,18 @@ export default function BuyButton() {
 
   useEffect(() => {
     if (window.solana?.isPhantom) {
-      window.solana.connect({ onlyIfTrusted: true })
-        .then(({ publicKey }) => setWalletAddress(publicKey.toString()))
-        .catch(() => {}); // Ignore if not authorized yet
+      window.solana.connect({ onlyIfTrusted: true }).then(({ publicKey }) => {
+        setWalletAddress(publicKey.toString());
+      });
     }
   }, []);
 
   const connectWallet = async () => {
-    if ('solana' in window) {
-      try {
-        const response = await window.solana.connect();
-        setWalletAddress(response.publicKey.toString());
-      } catch (err) {
-        console.error('Wallet connection failed:', err);
-      }
-    } else {
-      alert('Phantom wallet not found. Please install it.');
+    try {
+      const response = await window.solana.connect();
+      setWalletAddress(response.publicKey.toString());
+    } catch (err) {
+      console.error('Wallet connection failed', err);
     }
   };
 
@@ -38,17 +33,17 @@ export default function BuyButton() {
       setLoading(true);
       const provider = window.solana;
       const lamports = Math.floor(amountSOL * 1e9);
-      const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 
+      const connection = new window.solanaWeb3.Connection(ALCHEMY_RPC);
       const { blockhash } = await connection.getLatestBlockhash('confirmed');
 
-      const transaction = new Transaction({
+      const transaction = new window.solanaWeb3.Transaction({
         recentBlockhash: blockhash,
         feePayer: provider.publicKey,
       }).add(
-        SystemProgram.transfer({
+        window.solanaWeb3.SystemProgram.transfer({
           fromPubkey: provider.publicKey,
-          toPubkey: PRESALE_WALLET,
+          toPubkey: new window.solanaWeb3.PublicKey(PRESALE_WALLET),
           lamports,
         })
       );
@@ -56,9 +51,10 @@ export default function BuyButton() {
       const signedTx = await provider.signTransaction(transaction);
       const txid = await connection.sendRawTransaction(signedTx.serialize());
       await connection.confirmTransaction(txid, 'confirmed');
+
       setTxSig(txid);
 
-      const res = await fetch(`${BACKEND_URL}/api/purchase`, {
+      const response = await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,8 +64,8 @@ export default function BuyButton() {
         }),
       });
 
-      const data = await res.json();
-      setResult(data);
+      const json = await response.json();
+      setResult(json);
     } catch (err) {
       console.error('❌ Transaction error:', err);
       alert('❌ Transaction failed. See console for details.');
