@@ -23,7 +23,7 @@ const Leaderboard = () => {
   }, []);
 
   return (
-    <div style={{ marginTop: '2rem', color: 'white' }}>
+    <div style={{ marginTop: '2rem', color: 'white', textAlign: 'left' }}>
       <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>🏆 Leaderboard</h2>
 
       {error ? (
@@ -36,7 +36,8 @@ const Leaderboard = () => {
             data.map((entry, index) => (
               <li key={index} style={{ marginBottom: '0.75rem' }}>
                 <strong>{index + 1}.</strong>{' '}
-                {entry.wallet.slice(0, 6)}...{entry.wallet.slice(-4)} — 💰 {entry.amount} SOL
+                {entry.wallet.slice(0, 6)}...{entry.wallet.slice(-4)} — 💰{' '}
+                {parseFloat(entry.amount).toFixed(3)} SOL
               </li>
             ))
           )}

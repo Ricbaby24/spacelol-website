@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
-const PRESALE_WALLET = 'EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry'; // Your SOL wallet
+const PRESALE_WALLET = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
+const RPC_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 
 export default function BuyButton() {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -12,9 +14,9 @@ export default function BuyButton() {
 
   useEffect(() => {
     if (window.solana?.isPhantom) {
-      window.solana.connect({ onlyIfTrusted: true }).then(({ publicKey }) => {
-        setWalletAddress(publicKey.toString());
-      });
+      window.solana.connect({ onlyIfTrusted: true })
+        .then(({ publicKey }) => setWalletAddress(publicKey.toString()))
+        .catch(() => {}); // Ignore if not authorized yet
     }
   }, []);
 
@@ -24,7 +26,7 @@ export default function BuyButton() {
         const response = await window.solana.connect();
         setWalletAddress(response.publicKey.toString());
       } catch (err) {
-        console.error('Wallet connection failed', err);
+        console.error('Wallet connection failed:', err);
       }
     } else {
       alert('Phantom wallet not found. Please install it.');
@@ -36,17 +38,17 @@ export default function BuyButton() {
       setLoading(true);
       const provider = window.solana;
       const lamports = Math.floor(amountSOL * 1e9);
+      const connection = new Connection(RPC_ENDPOINT, 'confirmed');
 
-      const connection = new window.solanaWeb3.Connection('https://api.mainnet-beta.solana.com');
       const { blockhash } = await connection.getLatestBlockhash('confirmed');
 
-      const transaction = new window.solanaWeb3.Transaction({
+      const transaction = new Transaction({
         recentBlockhash: blockhash,
         feePayer: provider.publicKey,
       }).add(
-        window.solanaWeb3.SystemProgram.transfer({
+        SystemProgram.transfer({
           fromPubkey: provider.publicKey,
-          toPubkey: new window.solanaWeb3.PublicKey(PRESALE_WALLET),
+          toPubkey: PRESALE_WALLET,
           lamports,
         })
       );
@@ -54,11 +56,9 @@ export default function BuyButton() {
       const signedTx = await provider.signTransaction(transaction);
       const txid = await connection.sendRawTransaction(signedTx.serialize());
       await connection.confirmTransaction(txid, 'confirmed');
-
       setTxSig(txid);
 
-      // ✅ Notify backend to verify & send tokens
-      const response = await fetch(`${BACKEND_URL}/api/purchase`, {
+      const res = await fetch(`${BACKEND_URL}/api/purchase`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -68,11 +68,11 @@ export default function BuyButton() {
         }),
       });
 
-      const json = await response.json();
-      setResult(json);
+      const data = await res.json();
+      setResult(data);
     } catch (err) {
       console.error('❌ Transaction error:', err);
-      alert('❌ Transaction failed. Check console for details.');
+      alert('❌ Transaction failed. See console for details.');
     } finally {
       setLoading(false);
     }

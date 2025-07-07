@@ -42,7 +42,7 @@ const Whitepaper = () => {
 
           <p style={styles.warning}>
             💡 Always verify info on our official channels:<br />
-            <a href="https://x.com/SpacelolCoin" target="_blank" rel="noreferrer">Twitter/X</a> | <a href="https://t.me/+gyOLH39iCh1iMGI0" target="_blank" rel="noreferrer">Telegram</a>
+            <a href="https://x.com/SPLOLofficial" target="_blank" rel="noreferrer">Twitter/X</a> | <a href="https://t.me/+gyOLH39iCh1iMGI0" target="_blank" rel="noreferrer">Telegram</a>
           </p>
         </div>
       </div>

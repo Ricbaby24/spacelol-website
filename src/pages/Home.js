@@ -5,8 +5,8 @@ import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js';
 import CountdownTimer from '../components/CountdownTimer';
 import Leaderboard from '../components/Leaderboard';
 
-const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
+const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
 const BUY_LIMIT_SOL = 1;
 
 const Home = () => {
@@ -29,7 +29,7 @@ const Home = () => {
         return;
       }
 
-      const lamports = amount * 1e9;
+      const lamports = Math.floor(amount * 1e9);
 
       const transaction = new Transaction().add(
         SystemProgram.transfer({
@@ -60,7 +60,7 @@ const Home = () => {
         setStatus(`❌ Backend error: ${data.error || 'Try again later.'}`);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Transaction failed:', err);
       setStatus('❌ Transaction failed. Please try again.');
     }
   };
