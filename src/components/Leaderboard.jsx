@@ -2,52 +2,73 @@ import React, { useEffect, useState } from 'react';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 
-const Leaderboard = () => {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
+const LeaderboardPage = () => {
+  const [data, setData] = useState([]);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchLeaderboard = async () => {
+    const loadLeaderboard = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
-        const data = await res.json();
-        setEntries(data);
-      } catch (error) {
-        console.error('Failed to fetch leaderboard:', error);
-        setEntries([]);
-      } finally {
-        setLoading(false);
+        if (!res.ok) throw new Error('Failed to load leaderboard');
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error(err);
+        setError('⚠️ Could not load leaderboard');
       }
     };
 
-    fetchLeaderboard();
+    loadLeaderboard();
   }, []);
 
   return (
-    <div className="p-4 bg-black text-white max-w-4xl mx-auto rounded-xl shadow-lg mt-10">
-      <h2 className="text-2xl font-bold mb-4 text-center">🚀 Spacelol Leaderboard</h2>
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#0f0f0f',
+        color: 'white',
+        padding: '2rem',
+        fontFamily: 'Inter, sans-serif',
+      }}
+    >
+      <h1 style={{ fontSize: '2rem', marginBottom: '1rem', textAlign: 'center' }}>
+        🏆 Spacelol Presale Leaderboard
+      </h1>
 
-      {loading ? (
-        <p className="text-center">Loading...</p>
-      ) : entries.length === 0 ? (
-        <p className="text-center">No contributions yet. Be the first degen!</p>
+      {error ? (
+        <p style={{ color: '#ff4d4d', textAlign: 'center' }}>{error}</p>
       ) : (
-        <table className="w-full table-auto text-left border-collapse">
+        <table style={{ width: '100%', maxWidth: '800px', margin: '0 auto', borderCollapse: 'collapse' }}>
           <thead>
-            <tr className="text-purple-400 border-b border-gray-600">
-              <th className="p-2">Wallet</th>
-              <th className="p-2">SOL</th>
-              <th className="p-2">Time</th>
+            <tr style={{ borderBottom: '1px solid #555' }}>
+              <th style={{ padding: '0.5rem' }}>#</th>
+              <th style={{ padding: '0.5rem' }}>Wallet</th>
+              <th style={{ padding: '0.5rem' }}>Amount (SOL)</th>
+              <th style={{ padding: '0.5rem' }}>Date</th>
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry, i) => (
-              <tr key={i} className="border-b border-gray-700 hover:bg-gray-800">
-                <td className="p-2">{entry.wallet.slice(0, 4)}...{entry.wallet.slice(-4)}</td>
-                <td className="p-2">{entry.amount.toFixed(2)} SOL</td>
-                <td className="p-2">{new Date(entry.time).toLocaleString()}</td>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan="4" style={{ textAlign: 'center', padding: '1rem', color: '#ccc' }}>
+                  No contributions yet.
+                </td>
               </tr>
-            ))}
+            ) : (
+              data.map((entry, index) => (
+                <tr key={index} style={{ borderBottom: '1px solid #333' }}>
+                  <td style={{ padding: '0.5rem', textAlign: 'center' }}>{index + 1}</td>
+                  <td style={{ padding: '0.5rem', fontFamily: 'monospace' }}>
+                    {entry.wallet.slice(0, 6)}...{entry.wallet.slice(-4)}
+                  </td>
+                  <td style={{ padding: '0.5rem' }}>{entry.amount} SOL</td>
+                  <td style={{ padding: '0.5rem', fontSize: '0.9rem', color: '#aaa' }}>
+                    {new Date(entry.timestamp).toLocaleString()}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       )}
