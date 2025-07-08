@@ -128,7 +128,7 @@ const Home = () => {
             }}
           />
           <span style={{ fontSize: '1rem' }}>SOL</span>
-          {amount >= 0.01 && amount <= 100 && (
+          {amount >= 0.01 && amount <= 10000 && (
             <p style={{ fontSize: '0.95rem', marginTop: '0.5rem', color: '#00ffcc' }}>
               You’ll receive <strong>{expectedTokens}</strong> $SPLOL
             </p>
