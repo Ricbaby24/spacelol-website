@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey, Connection, Transaction, SystemProgram } from '@solana/web3.js';
+import { Link } from 'react-router-dom';
 import CountdownTimer from '../components/CountdownTimer';
 import Leaderboard from '../components/Leaderboard';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 const ALCHEMY_RPC = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
-const BUY_LIMIT_SOL = 1000;
+const BUY_LIMIT_SOL = 10000;
 const TOKEN_PRICE = 0.0008;
 
 const Home = () => {
@@ -26,7 +27,7 @@ const Home = () => {
       }
 
       if (amount < 0.01 || amount > BUY_LIMIT_SOL) {
-        setStatus('❌ Amount must be between 0.01 and 1000 SOL');
+        setStatus('❌ Amount must be between 0.01 and 10000 SOL');
         return;
       }
 
@@ -110,7 +111,7 @@ const Home = () => {
           <input
             type="number"
             min="0.01"
-            max="1000"
+            max="10000"
             step="0.01"
             value={amount}
             onChange={(e) => {
@@ -128,7 +129,7 @@ const Home = () => {
             }}
           />
           <span style={{ fontSize: '1rem' }}>SOL</span>
-          {amount >= 0.01 && amount <= 1000 && (
+          {amount >= 0.01 && amount <= 10000 && (
             <p style={{ fontSize: '0.95rem', marginTop: '0.5rem', color: '#00ffcc' }}>
               You’ll receive <strong>{expectedTokens}</strong> $SPLOL
             </p>
@@ -173,6 +174,19 @@ const Home = () => {
 
         <div style={{ marginTop: '2.5rem' }}>
           <Leaderboard />
+        </div>
+
+        <div style={{ marginTop: '2rem' }}>
+          <Link
+            to="/leaderboard"
+            style={{
+              color: '#00ffcc',
+              textDecoration: 'underline',
+              fontSize: '0.95rem',
+            }}
+          >
+            🔍 View Full Leaderboard
+          </Link>
         </div>
       </div>
     </div>

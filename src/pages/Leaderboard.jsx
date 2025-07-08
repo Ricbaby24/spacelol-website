@@ -1,50 +1,62 @@
+// pages/LeaderboardPage.js
 import React, { useEffect, useState } from 'react';
 
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 
-const Leaderboard = () => {
+export default function LeaderboardPage() {
   const [data, setData] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadLeaderboard = async () => {
+    const loadData = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/leaderboard`);
-        if (!res.ok) throw new Error('Failed to load leaderboard');
+        if (!res.ok) throw new Error('Failed to fetch leaderboard');
         const json = await res.json();
         setData(json);
       } catch (err) {
         console.error(err);
-        setError('⚠️ Could not load leaderboard');
+        setError('⚠️ Failed to load leaderboard');
       }
     };
 
-    loadLeaderboard();
+    loadData();
   }, []);
 
   return (
-    <div style={{ marginTop: '2rem', color: 'white', textAlign: 'left' }}>
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>🏆 Leaderboard</h2>
+    <div className="min-h-screen bg-black text-white p-8 font-mono">
+      <h1 className="text-3xl mb-6 text-center">🚀 Spacelol Leaderboard</h1>
 
       {error ? (
-        <p style={{ color: '#ff4d4d' }}>{error}</p>
+        <p className="text-red-400">{error}</p>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {data.length === 0 ? (
-            <li style={{ color: '#ccc' }}>No contributions yet.</li>
-          ) : (
-            data.map((entry, index) => (
-              <li key={index} style={{ marginBottom: '0.75rem' }}>
-                <strong>{index + 1}.</strong>{' '}
-                {entry.wallet.slice(0, 6)}...{entry.wallet.slice(-4)} — 💰{' '}
-                {parseFloat(entry.amount).toFixed(3)} SOL
-              </li>
-            ))
-          )}
-        </ul>
+        <table className="w-full border border-gray-600 text-sm">
+          <thead>
+            <tr className="bg-gray-800 text-left">
+              <th className="p-2 border border-gray-700">#</th>
+              <th className="p-2 border border-gray-700">Wallet</th>
+              <th className="p-2 border border-gray-700">Amount (SOL)</th>
+              <th className="p-2 border border-gray-700">Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan="4" className="p-4 text-center text-gray-400">No contributions yet.</td>
+              </tr>
+            ) : (
+              data.map((entry, index) => (
+                <tr key={index} className="border-t border-gray-700 hover:bg-gray-800">
+                  <td className="p-2">{index + 1}</td>
+                  <td className="p-2">{entry.wallet.slice(0, 6)}...{entry.wallet.slice(-4)}</td>
+                  <td className="p-2">{entry.amount}</td>
+                  <td className="p-2">{new Date(entry.time).toLocaleString()}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       )}
     </div>
   );
-};
-
-export default Leaderboard;
+}
