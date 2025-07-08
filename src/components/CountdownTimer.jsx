@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 // ⏳ Presale end date in UTC (update if needed)
-const PRESALE_END = new Date('2025-08-15T23:59:59Z').getTime();
+const PRESALE_END = new Date('2025-07-17T23:59:59Z').getTime();
 
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState(getTimeRemaining());
