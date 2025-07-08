@@ -8,12 +8,14 @@ import Leaderboard from '../components/Leaderboard';
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 const ALCHEMY_RPC = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
-const BUY_LIMIT_SOL = 1;
+const BUY_LIMIT_SOL = 1.5;
+const TOKEN_PRICE = 0.0008;
 
 const Home = () => {
   const { publicKey, sendTransaction } = useWallet();
   const [amount, setAmount] = useState(0.05);
   const [status, setStatus] = useState('');
+  const [expectedTokens, setExpectedTokens] = useState((0.05 / TOKEN_PRICE).toFixed(2));
 
   const handleBuy = async () => {
     setStatus('');
@@ -24,7 +26,7 @@ const Home = () => {
       }
 
       if (amount < 0.01 || amount > BUY_LIMIT_SOL) {
-        setStatus('❌ Amount must be between 0.01 and 1 SOL');
+        setStatus('❌ Amount must be between 0.01 and 1.5 SOL');
         return;
       }
 
@@ -108,10 +110,14 @@ const Home = () => {
           <input
             type="number"
             min="0.01"
-            max="1"
+            max="1.5"
             step="0.01"
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Number(e.target.value);
+              setAmount(value);
+              setExpectedTokens((value / TOKEN_PRICE).toFixed(2));
+            }}
             style={{
               padding: '0.5rem',
               fontSize: '1rem',
@@ -122,6 +128,11 @@ const Home = () => {
             }}
           />
           <span style={{ fontSize: '1rem' }}>SOL</span>
+          {amount >= 0.01 && amount <= 1.5 && (
+            <p style={{ fontSize: '0.95rem', marginTop: '0.5rem', color: '#00ffcc' }}>
+              You’ll receive <strong>{expectedTokens}</strong> $SPLOL
+            </p>
+          )}
         </div>
 
         <button
