@@ -8,7 +8,7 @@ import Leaderboard from '../components/Leaderboard';
 const BACKEND_URL = 'https://spacelol-backend.onrender.com';
 const ALCHEMY_RPC = 'https://solana-mainnet.g.alchemy.com/v2/jMkXZky_t4wBBnOQqMtojkWwlmHwrfIk';
 const PRESALE_ADDRESS = new PublicKey('EKrh19F53n9v5Wt8CaGy6fAAzZ75Jxo48jq8APqJoJry');
-const BUY_LIMIT_SOL = 100;
+const BUY_LIMIT_SOL = 10000;
 const TOKEN_PRICE = 0.0008;
 
 const Home = () => {
@@ -26,7 +26,7 @@ const Home = () => {
       }
 
       if (amount < 0.01 || amount > BUY_LIMIT_SOL) {
-        setStatus('❌ Amount must be between 0.01 and 100 SOL');
+        setStatus('❌ Amount must be between 0.01 and 10000 SOL');
         return;
       }
 
@@ -110,7 +110,7 @@ const Home = () => {
           <input
             type="number"
             min="0.01"
-            max="100"
+            max="10000"
             step="0.01"
             value={amount}
             onChange={(e) => {
